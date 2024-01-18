@@ -1,34 +1,46 @@
 "use client";
-import React, { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { addOne, initCounterState, resetCount, substractOne } from "@/store/counter/counterSlice";
+import React, { useState, useEffect } from "react";
 
 interface Props {
     value?: number
 }
 
-export const CartCounter = ({value = 10}: Props) => {
-  const [counter, setCounter] = useState(value);
+interface CounterResponse {
+  method: string
+  counter: number
+}
 
-  const increase = () => {
-    setCounter(counter + 1);
-  };
+const getApiCounter = async () : Promise<CounterResponse> => { 
+  const data = await fetch('/api/counter').then(res => res.json())
+  return data
+}
 
-  const decrease = () => {
-    setCounter(counter - 1);
-  };
+export const CartCounter = ({ value = 10 }: Props) => {
+  const count = useAppSelector(state => state.counter.count)
+  const dispatch = useAppDispatch()
+  
+
+  useEffect(() => {
+    getApiCounter().then(({counter}) => dispatch(initCounterState(counter)))
+  }, [dispatch, value]);
+  
+  
 
   return (
     <>
-      <span className="text-9xl">{counter}</span>
+      <span className="text-9xl">{count}</span>
       <div className="flex justify-center items-start p-2">
         <button
           className="p-2 bg-slate-800 text-white rounded-xl m-2"
-          onClick={increase}
+          onClick={() => dispatch(addOne())}
         >
           +1
         </button>
         <button
           className="p-2 bg-slate-800 text-white rounded-xl m-2"
-          onClick={decrease}
+          onClick={() => dispatch(substractOne())}
         >
           -1
         </button>
